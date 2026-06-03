@@ -1,0 +1,18 @@
+# Model artifacts
+*.pth
+*.pkl
+distilbert_ticket_classifier/
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Environment
+.env
+.venv/
+venv/
+
+# OS
+.DS_Store
