@@ -6,7 +6,10 @@ Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pi
 
 **Test set results (2,385 tickets):** MLP **82.76%** macro F1 · BERT **83.67%** macro F1 (+0.91 pp)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier_TF_IDF.ipynb)
+| Notebook | Colab |
+|----------|-------|
+| TF-IDF + MLP | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier_TF_IDF.ipynb) |
+| BERT | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier_BERT.ipynb) |
 
 ## What this project does
 
