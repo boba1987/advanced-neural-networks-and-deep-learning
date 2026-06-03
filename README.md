@@ -92,7 +92,48 @@ batch_size   = 64
 
 5. **Accuracy vs macro F1 can disagree.** `wider_net_small_batch` had the highest validation **accuracy** (82.70%) but slightly lower **macro F1** (82.23%) than `max_features_15k`. Choosing by macro F1 favours balanced performance across all four types, including the minority `Change` class.
 
-6. **~82–83% validation performance is a solid TF-IDF ceiling.** Further gains may need richer models (e.g. fine-tuned transformers), better text features, or using additional fields (subject, tags) — at the cost of complexity.
+6. **~82–83% validation performance is a solid TF-IDF ceiling** on this split. BERT fine-tuning (see below) pushed validation macro F1 higher, at the cost of GPU time and model size.
+
+## Results: MLP vs BERT
+
+Both models use the same dataset and stratified split (`random_state=42`). Metrics below are from actual runs.
+
+| Model | Val accuracy | Val macro F1 | Test accuracy | Test macro F1 | Top-3 test |
+|-------|-------------:|-------------:|--------------:|--------------:|-----------:|
+| TF-IDF + MLP (`max_features_15k`) | 82.29% | 82.60% | — | — | — |
+| BERT (`bert-base-uncased`) | **85.43%** | **86.73%** | **82.47%** | **83.67%** | **99.96%** |
+
+**BERT vs MLP (validation):** +3.13 pp accuracy, **+4.13 pp macro F1**.
+
+On the held-out test set, BERT reached **83.67% macro F1** — about **+1 pp** above the MLP’s best validation F1 (82.60%), suggesting a modest but real gain from contextual embeddings.
+
+### BERT training summary
+
+- **Model:** `bert-base-uncased` (~109M parameters)
+- **Hardware:** CUDA (Colab GPU), batch size 16, max length 256
+- **Training:** up to 10 epochs, early stopping at epoch 7; **best checkpoint at epoch 5**
+- **Best validation:** 85.43% accuracy, **86.73% macro F1**
+
+The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-tuning: pretraining heads (`cls.predictions.*`, `cls.seq_relationship.*`) are dropped as UNEXPECTED, and the classification head (`classifier.*`) is MISSING because it is **newly initialized** for this 4-class task and learned during training.
+
+### BERT test set — per-class F1
+
+| Type | Precision | Recall | F1 | Support |
+|------|----------:|-------:|---:|--------:|
+| Change | 0.96 | 0.92 | **0.94** | 257 |
+| Request | 0.98 | 0.98 | **0.98** | 700 |
+| Incident | 0.83 | 0.74 | 0.78 | 929 |
+| Problem | 0.59 | 0.72 | **0.65** | 499 |
+
+**Problem** remains the hardest class (lowest F1 for both precision and recall balance). **Request** and **Change** are classified most reliably. Sample predictions on hand-written tickets were correct with high confidence (e.g. crash → Incident 99.4%, documentation → Request 99.95%, recurring errors → Problem 93.9%, migration → Change 99.6%).
+
+### Takeaways
+
+1. **BERT beats the tuned MLP on validation** (+4.1 pp macro F1), confirming that contextual language modelling helps beyond bag-of-ngrams.
+2. **Test macro F1 (83.67%)** is only slightly above the MLP’s validation peak — some overfitting appears after epoch 5 (train F1 reached 98.8% by epoch 7 while val F1 dipped).
+3. **Top-3 accuracy (99.96%)** shows the model almost always ranks the true type in its top three guesses.
+4. **Problem** is the main error source; improving that class likely needs more Problem examples or class-focused tuning.
+5. **Trade-off:** BERT needs a GPU and ~109M parameters; the MLP trains on CPU in minutes with a much smaller footprint.
 
 ## How to run
 
@@ -116,6 +157,6 @@ Artifacts are written to the working directory (gitignored): `ticket_classifier.
 
 ## Requirements
 
-Installed in the notebook:
+**MLP notebook:** `torch`, `scikit-learn`, `pandas`, `matplotlib`, `seaborn`, `joblib`
 
-- `torch`, `scikit-learn`, `pandas`, `matplotlib`, `seaborn`, `joblib`
+**BERT notebook:** above + `transformers`
