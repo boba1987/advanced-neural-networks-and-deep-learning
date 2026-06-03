@@ -172,17 +172,6 @@ The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-t
 
 Both notebooks use the same dataset and split (`random_state=42`), so test metrics are directly comparable.
 
-## Project structure
-
-```
-├── Customer_Support_Ticket_Classifier_TF_IDF.ipynb   # TF-IDF + MLP baseline
-├── Customer_Support_Ticket_Classifier_BERT.ipynb     # BERT fine-tuning (GPU recommended)
-├── dataset-tickets-en.csv                            # Cleaned training data (body, type)
-├── README.md
-└── .gitignore                                        # Model artifacts, checkpoints
-```
-
-Artifacts (gitignored): `ticket_classifier.pth`, `tfidf_vectorizer.pkl`, `label_encoder.pkl` (MLP) · `bert_ticket_classifier/` (BERT)
 
 ## Requirements
 
