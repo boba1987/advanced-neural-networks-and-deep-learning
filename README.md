@@ -4,6 +4,8 @@ Classify support tickets into one of four types — **Incident**, **Request**, *
 
 Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier_TF_IDF.ipynb`](Customer_Support_Ticket_Classifier_TF_IDF.ipynb)) and **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
 
+**Test set results (2,385 tickets):** MLP **82.76%** macro F1 · BERT **83.67%** macro F1 (+0.91 pp)
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier_TF_IDF.ipynb)
 
 ## What this project does
@@ -13,7 +15,7 @@ This project trains a model to predict the type from the ticket message alone.
 **Input:** ticket body (`body` column)  
 **Output:** one of `Incident`, `Request`, `Problem`, `Change`
 
-Both notebooks share the same setup:
+Both notebooks have the same setup:
 
 1. Load and explore the dataset  
 2. Clean text, encode labels, split train / validation / test (80% / 10% / 20%, stratified)  
@@ -31,8 +33,6 @@ Both notebooks share the same setup:
 4. Evaluate on the held-out test set  
 5. Save the model and run sample predictions  
 
-No subject line, queue, priority, or agent reply is used — only the customer message.
-
 ## Dataset
 
 | File | Rows | Columns |
@@ -45,8 +45,8 @@ No subject line, queue, priority, or agent reply is used — only the customer m
 |------|------:|
 | Incident | 4,642 |
 | Request | 3,498 |
-| Problem | 2,498 |
-| Change | 1,285 |
+| Problem | 2,497 |
+| Change | 1,284 |
 
 `Change` is the smallest class, so **macro F1** (average F1 across classes) is a better tuning metric than accuracy alone.
 
@@ -58,12 +58,12 @@ The project has two parts on the **same dataset and split**:
 
 - Build a strong, lightweight classifier: **TF-IDF bag-of-ngrams → PyTorch MLP**
 - Tune it properly — compare six configs in a structured search and pick the best by **validation macro F1**
-- Answer: *how much can a simple model achieve on short support-ticket text, and which knobs matter?*
+- Answer: *how much can a simple model achieve?* → **82.76%** test macro F1 after tuning and full training
 
 **2. Transformer comparison** ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb))
 
 - Fine-tune **`bert-base-uncased`** on the identical split
-- Compare against the tuned MLP — does contextual language modelling beat bag-of-ngrams, and is the extra compute worth it?
+- Compare against the tuned MLP — on test, BERT reaches **83.67%** macro F1 vs the MLP’s **82.76%** (+0.91 pp)
 
 ## Experiment: hyperparameter search
 
@@ -101,7 +101,7 @@ batch_size   = 64
 
 5. **Accuracy vs macro F1 can disagree.** `wider_net_small_batch` had the highest validation **accuracy** (82.70%) but slightly lower **macro F1** (82.23%) than `max_features_15k`. Choosing by macro F1 favours balanced performance across all four types, including the minority `Change` class.
 
-6. **~82–83% validation performance is a solid TF-IDF ceiling** on this split. BERT fine-tuning (see below) pushed validation macro F1 higher, at the cost of GPU time and model size.
+6. **Full training beats the 12-epoch search.** After retraining `max_features_15k` for up to 25 epochs, validation macro F1 reached **84.56%** (vs 82.60% during search). BERT still leads on validation (86.73%), but the gap is smaller than the search-only comparison suggested.
 
 ## Results: MLP vs BERT
 
@@ -109,12 +109,31 @@ Both models use the same dataset and stratified split (`random_state=42`). Metri
 
 | Model | Val accuracy | Val macro F1 | Test accuracy | Test macro F1 | Top-3 test |
 |-------|-------------:|-------------:|--------------:|--------------:|-----------:|
-| TF-IDF + MLP (`max_features_15k`) | 82.29% | 82.60% | — | — | — |
+| TF-IDF + MLP (`max_features_15k`) | 84.17% | 84.56% | 82.14% | 82.76% | 98.28% |
 | BERT (`bert-base-uncased`) | **85.43%** | **86.73%** | **82.47%** | **83.67%** | **99.96%** |
 
-**BERT vs MLP (validation):** +3.13 pp accuracy, **+4.13 pp macro F1**.
+**BERT vs MLP (validation):** +1.26 pp accuracy, **+2.17 pp macro F1**.  
+**BERT vs MLP (test set, 2,385 tickets):** +0.33 pp accuracy, **+0.91 pp macro F1**.
 
-On the held-out test set, BERT reached **83.67% macro F1** — about **+1 pp** above the MLP’s best validation F1 (82.60%), suggesting a modest but real gain from contextual embeddings.
+Both models generalize worse on the held-out test set than on validation. BERT’s val→test drop is larger (−3.06 pp macro F1) than the MLP’s (−1.80 pp), yet BERT still leads on test by **+0.91 pp** macro F1.
+
+### MLP training summary
+
+- **Config:** `max_features_15k` (15,000 TF-IDF features, hidden 512→128, lr 5e-4)
+- **Hardware:** CPU
+- **Training:** up to 25 epochs, early stopping at epoch 7; **best checkpoint at epoch 4**
+- **Best validation:** 84.17% accuracy, **84.56% macro F1**
+- **Test set:** 82.14% accuracy, **82.76% macro F1**, 98.28% top-3
+- **Parameters:** ~7.8M
+
+### MLP test set — per-class F1
+
+| Type | Precision | Recall | F1 | Support |
+|------|----------:|-------:|---:|--------:|
+| Change | 0.94 | 0.93 | 0.94 | 257 |
+| Request | 0.97 | 0.98 | 0.98 | 700 |
+| Incident | 0.79 | 0.78 | 0.78 | 929 |
+| Problem | 0.61 | 0.62 | **0.61** | 499 |
 
 ### BERT training summary
 
@@ -122,6 +141,7 @@ On the held-out test set, BERT reached **83.67% macro F1** — about **+1 pp** a
 - **Hardware:** CUDA (Colab GPU), batch size 16, max length 256
 - **Training:** up to 10 epochs, early stopping at epoch 7; **best checkpoint at epoch 5**
 - **Best validation:** 85.43% accuracy, **86.73% macro F1**
+- **Test set:** 82.47% accuracy, **83.67% macro F1**, 99.96% top-3
 
 The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-tuning: pretraining heads (`cls.predictions.*`, `cls.seq_relationship.*`) are dropped as UNEXPECTED, and the classification head (`classifier.*`) is MISSING because it is **newly initialized** for this 4-class task and learned during training.
 
@@ -138,11 +158,11 @@ The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-t
 
 ### Takeaways
 
-1. **BERT beats the tuned MLP on validation** (+4.1 pp macro F1), confirming that contextual language modelling helps beyond bag-of-ngrams.
-2. **Test macro F1 (83.67%)** is only slightly above the MLP’s validation peak — some overfitting appears after epoch 5 (train F1 reached 98.8% by epoch 7 while val F1 dipped).
-3. **Top-3 accuracy (99.96%)** shows the model almost always ranks the true type in its top three guesses.
-4. **Problem** is the main error source; improving that class likely needs more Problem examples or class-focused tuning.
-5. **Trade-off:** BERT needs a GPU and ~109M parameters; the MLP trains on CPU in minutes with a much smaller footprint.
+1. **BERT beats the tuned MLP on both validation and test** — but the test-set gap is modest (+0.91 pp macro F1), while validation suggests a larger difference (+2.17 pp).
+2. **Both models overfit somewhat** — validation F1 exceeds test F1 for MLP (84.56% → 82.76%) and BERT (86.73% → 83.67%).
+3. **Problem is hardest for both** — MLP F1 0.61, BERT F1 0.65; BERT helps that class most but it remains the weak point.
+4. **Request and Change are easy** — both models reach ~0.94–0.98 F1 on these types.
+5. **Trade-off:** BERT adds ~1 pp test F1 over a well-tuned MLP, but needs a GPU and ~109M parameters vs ~7.8M on CPU.
 
 ## How to run
 
@@ -152,6 +172,17 @@ The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-t
 
 Both notebooks use the same dataset and split (`random_state=42`), so test metrics are directly comparable.
 
+## Project structure
+
+```
+├── Customer_Support_Ticket_Classifier_TF_IDF.ipynb   # TF-IDF + MLP baseline
+├── Customer_Support_Ticket_Classifier_BERT.ipynb     # BERT fine-tuning (GPU recommended)
+├── dataset-tickets-en.csv                            # Cleaned training data (body, type)
+├── README.md
+└── .gitignore                                        # Model artifacts, checkpoints
+```
+
+Artifacts (gitignored): `ticket_classifier.pth`, `tfidf_vectorizer.pkl`, `label_encoder.pkl` (MLP) · `bert_ticket_classifier/` (BERT)
 
 ## Requirements
 
