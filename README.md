@@ -2,7 +2,7 @@
 
 Classify IT support tickets into one of four types — **Incident**, **Request**, **Problem**, or **Change** — using only the ticket **body** text.
 
-Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline with hyperparameter search, trained on English support tickets and runnable in Google Colab.
+Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)) and an optional **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier.ipynb)
 
@@ -96,17 +96,22 @@ batch_size   = 64
 
 ## How to run
 
-1. Open [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb) in Colab (badge above) or locally.  
-2. **Runtime → Run all** — CPU is fine; full training takes a few minutes.  
-3. Artifacts are written to the working directory (gitignored): `ticket_classifier.pth`, `tfidf_vectorizer.pkl`, `label_encoder.pkl`.
+**MLP baseline:** open [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb) → **Runtime → Run all** (CPU is fine).
+
+**BERT:** open [`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb) → **Runtime → Change runtime type → T4 GPU** → **Run all**.
+
+Both notebooks use the same dataset and split (`random_state=42`), so test metrics are directly comparable.
+
+Artifacts are written to the working directory (gitignored): `ticket_classifier.pth` (MLP) or `bert_ticket_classifier/` (BERT).
 
 ## Project structure
 
 ```
-├── Customer_Support_Ticket_Classifier.ipynb   # Full pipeline
-├── dataset-tickets-en.csv                     # Cleaned training data
+├── Customer_Support_Ticket_Classifier.ipynb       # TF-IDF + MLP baseline
+├── Customer_Support_Ticket_Classifier_BERT.ipynb  # BERT fine-tuning (GPU recommended)
+├── dataset-tickets-en.csv                         # Cleaned training data
 ├── README.md
-└── .gitignore                                 # Model artifacts, checkpoints
+└── .gitignore                                     # Model artifacts, checkpoints
 ```
 
 ## Requirements

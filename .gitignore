@@ -2,6 +2,7 @@
 *.pth
 *.pkl
 distilbert_ticket_classifier/
+bert_ticket_classifier/
 *.zip
 
 # Python
