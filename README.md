@@ -2,9 +2,9 @@
 
 Classify support tickets into one of four types — **Incident**, **Request**, **Problem**, or **Change** — using only the ticket **body** text.
 
-Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)) and **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
+Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier_TF_IDF.ipynb`](Customer_Support_Ticket_Classifier_TF_IDF.ipynb)) and **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier_TF_IDF.ipynb)
 
 ## What this project does
 
@@ -18,7 +18,7 @@ Both notebooks share the same setup:
 1. Load and explore the dataset  
 2. Clean text, encode labels, split train / validation / test (80% / 10% / 20%, stratified)  
 
-**[`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)** — TF-IDF + PyTorch MLP:
+**[`Customer_Support_Ticket_Classifier_TF_IDF.ipynb`](Customer_Support_Ticket_Classifier_TF_IDF.ipynb)** — TF-IDF + PyTorch MLP:
 
 3. Build vectorizer and MLP using the **best config from hyperparameter search** (`max_features_15k`; six candidates listed for reference)  
 4. Train with early stopping (validation **macro F1**)  
@@ -54,7 +54,7 @@ No subject line, queue, priority, or agent reply is used — only the customer m
 
 The project has two parts on the **same dataset and split**:
 
-**1. Baseline without transformers** ([`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb))
+**1. Baseline without transformers** ([`Customer_Support_Ticket_Classifier_TF_IDF.ipynb`](Customer_Support_Ticket_Classifier_TF_IDF.ipynb))
 
 - Build a strong, lightweight classifier: **TF-IDF bag-of-ngrams → PyTorch MLP**
 - Tune it properly — compare six configs in a structured search and pick the best by **validation macro F1**
@@ -146,7 +146,7 @@ The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-t
 
 ## How to run
 
-**MLP baseline:** open [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb) → **Runtime → Run all** (CPU is fine).
+**MLP baseline:** open [`Customer_Support_Ticket_Classifier_TF_IDF.ipynb`](Customer_Support_Ticket_Classifier_TF_IDF.ipynb) → **Runtime → Run all** (CPU is fine).
 
 **BERT:** open [`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb) → **Runtime → Change runtime type → T4 GPU** → **Run all**.
 
