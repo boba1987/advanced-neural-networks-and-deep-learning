@@ -1,28 +1,35 @@
 # Customer Support Ticket Classifier
 
-Classify IT support tickets into one of four types — **Incident**, **Request**, **Problem**, or **Change** — using only the ticket **body** text.
+Classify support tickets into one of four types — **Incident**, **Request**, **Problem**, or **Change** — using only the ticket **body** text.
 
-Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)) and an optional **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
+Built as a hands-on deep learning project: a classic **TF-IDF + PyTorch MLP** pipeline (see [`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)) and **BERT** fine-tuning notebook ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)), trained on English support tickets and runnable in Google Colab.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/boba1987/advanced-neural-networks-and-deep-learning/blob/main/Customer_Support_Ticket_Classifier.ipynb)
 
 ## What this project does
 
-Support teams tag every ticket with a type. That routing step is repetitive and slow at scale. This project trains a model to predict the type from the ticket message alone.
+This project trains a model to predict the type from the ticket message alone.
 
 **Input:** ticket body (`body` column)  
 **Output:** one of `Incident`, `Request`, `Problem`, `Change`
 
-The notebook walks through the full workflow:
+Both notebooks share the same setup:
 
 1. Load and explore the dataset  
 2. Clean text, encode labels, split train / validation / test (80% / 10% / 20%, stratified)  
-3. Build TF-IDF + MLP using the **best config from hyperparameter search** (`max_features_15k`)  
+
+**[`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb)** — TF-IDF + PyTorch MLP:
+
+3. Build vectorizer and MLP using the **best config from hyperparameter search** (`max_features_15k`; six candidates listed for reference)  
 4. Train with early stopping (validation **macro F1**)  
-5. Evaluate on the held-out test set (accuracy, macro F1, confusion matrix)  
+5. Evaluate on the held-out test set  
 6. Save the model and run sample predictions  
 
-All six candidate configs are defined at the top of Phase 3 for reference; the notebook skips re-running the search on every execution.
+**[`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb)** — BERT fine-tuning:
+
+3. Fine-tune `bert-base-uncased` on the same split (GPU recommended)  
+4. Evaluate on the held-out test set  
+5. Save the model and run sample predictions  
 
 No subject line, queue, priority, or agent reply is used — only the customer message.
 
@@ -31,8 +38,6 @@ No subject line, queue, priority, or agent reply is used — only the customer m
 | File | Rows | Columns |
 |------|------|---------|
 | `dataset-tickets-en.csv` | 11,921 | `body`, `type` |
-
-The raw export included subject, answer, tags, queue, and other fields. Those were removed so the file only contains what the model needs (~4.4 MB, down from ~10 MB).
 
 **Class distribution:**
 
@@ -47,14 +52,18 @@ The raw export included subject, answer, tags, queue, and other fields. Those we
 
 ## What we were trying to do
 
-The goal was to build a **strong baseline classifier** without transformers:
+The project has two parts on the **same dataset and split**:
 
-- Use a simple, interpretable stack: **TF-IDF bag-of-ngrams → feedforward neural network**
-- Tune it properly instead of guessing hyperparameters
-- Compare six configurations in a structured search, each trained for up to 12 epochs with early stopping
-- Select the best setup by **validation macro F1**, then retrain for the full epoch budget
+**1. Baseline without transformers** ([`Customer_Support_Ticket_Classifier.ipynb`](Customer_Support_Ticket_Classifier.ipynb))
 
-This answers a practical question: *how much performance can you get from a lightweight model on short support-ticket text, and which knobs matter most?*
+- Build a strong, lightweight classifier: **TF-IDF bag-of-ngrams → PyTorch MLP**
+- Tune it properly — compare six configs in a structured search and pick the best by **validation macro F1**
+- Answer: *how much can a simple model achieve on short support-ticket text, and which knobs matter?*
+
+**2. Transformer comparison** ([`Customer_Support_Ticket_Classifier_BERT.ipynb`](Customer_Support_Ticket_Classifier_BERT.ipynb))
+
+- Fine-tune **`bert-base-uncased`** on the identical split
+- Compare against the tuned MLP — does contextual language modelling beat bag-of-ngrams, and is the extra compute worth it?
 
 ## Experiment: hyperparameter search
 
@@ -143,17 +152,6 @@ The `LOAD REPORT` warnings when loading the checkpoint are **normal** for fine-t
 
 Both notebooks use the same dataset and split (`random_state=42`), so test metrics are directly comparable.
 
-Artifacts are written to the working directory (gitignored): `ticket_classifier.pth` (MLP) or `bert_ticket_classifier/` (BERT).
-
-## Project structure
-
-```
-├── Customer_Support_Ticket_Classifier.ipynb       # TF-IDF + MLP baseline
-├── Customer_Support_Ticket_Classifier_BERT.ipynb  # BERT fine-tuning (GPU recommended)
-├── dataset-tickets-en.csv                         # Cleaned training data
-├── README.md
-└── .gitignore                                     # Model artifacts, checkpoints
-```
 
 ## Requirements
 
